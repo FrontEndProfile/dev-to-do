@@ -1,7 +1,6 @@
 <html>
-
 <head>
-    <title>DevTaskMaster Pro - Advanced Task Management for Developers</title>
+    <title>Advanced Task Management for Developers</title>
     <style>
         body {
             font-family: 'Roboto', Arial, sans-serif;
@@ -84,6 +83,31 @@
 
         .priority-low {
             border-left: 5px solid #2ecc71;
+        }
+
+        .create-task-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .create-task-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .create-task-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .form-group {
@@ -270,32 +294,7 @@
             </div>
         </div>
 
-        <div class="task-form">
-            <h2>Create New Task</h2>
-            <form id="newTaskForm">
-                <div class="form-group">
-                    <label for="taskName">Task Name:</label>
-                    <input type="text" id="taskName" name="taskName" required>
-                </div>
-                <div class="form-group">
-                    <label for="taskDescription">Description:</label>
-                    <textarea id="taskDescription" name="taskDescription"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="estimatedTime">Estimated Time (hours):</label>
-                    <input type="number" id="estimatedTime" name="estimatedTime" min="0" step="0.5" required>
-                </div>
-                <div class="form-group">
-                    <label for="priority">Priority:</label>
-                    <select id="priority" name="priority">
-                        <option value="low">Low</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-button">Add Task</button>
-            </form>
-        </div>
+        <button class="create-task-button" id="createTaskBtn">+ Create New Task</button>
 
         <div class="task-board">
             <div class="task-column" id="todo">
@@ -320,46 +319,46 @@
                 <h3 class="column-header">Done</h3>
             </div>
         </div>
-
     </div>
 
     <div id="taskModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Edit Task</h2>
-            <form id="editTaskForm">
-                <input type="hidden" id="editTaskId">
+            <h2 id="modalTitle">Create New Task</h2>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
                 <div class="form-group">
-                    <label for="editTaskName">Task Name:</label>
-                    <input type="text" id="editTaskName" name="editTaskName" required>
+                    <label for="taskName">Task Name:</label>
+                    <input type="text" id="taskName" name="taskName" required>
                 </div>
                 <div class="form-group">
-                    <label for="editTaskDescription">Description:</label>
-                    <textarea id="editTaskDescription" name="editTaskDescription"></textarea>
+                    <label for="taskDescription">Description:</label>
+                    <textarea id="taskDescription" name="taskDescription"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="editEstimatedTime">Estimated Time (hours):</label>
-                    <input type="number" id="editEstimatedTime" name="editEstimatedTime" min="0" step="0.5" required>
+                    <label for="estimatedTime">Estimated Time (hours):</label>
+                    <input type="number" id="estimatedTime" name="estimatedTime" min="0" step="0.5" required>
                 </div>
                 <div class="form-group">
-                    <label for="editPriority">Priority:</label>
-                    <select id="editPriority" name="editPriority">
+                    <label for="priority">Priority:</label>
+                    <select id="priority" name="priority">
                         <option value="low">Low</option>
                         <option value="normal">Normal</option>
                         <option value="high">High</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="editStatus">Status:</label>
-                    <select id="editStatus" name="editStatus">
+                <div class="form-group" id="statusGroup" style="display:none;">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status">
                         <option value="todo">To Do</option>
                         <option value="in-progress">In Progress</option>
                         <option value="done">Done</option>
                     </select>
                 </div>
                 <div class="btn-container">
-                    <button type="button" class="delete-button" id="deleteTaskBtn">Delete Task</button>
-                    <button type="submit" class="update-button">Update Task</button>
+                    <button type="submit" class="submit-button" id="submitTaskBtn">Add Task</button>
+                    <button type="button" class="delete-button" id="deleteTaskBtn" style="display:none;">Delete
+                        Task</button>
                 </div>
             </form>
         </div>
@@ -367,13 +366,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('newTaskForm');
             const taskBoard = document.querySelector('.task-board');
             const columns = document.querySelectorAll('.task-column');
             const modal = document.getElementById('taskModal');
             const closeBtn = modal.querySelector('.close');
-            const editForm = document.getElementById('editTaskForm');
+            const taskForm = document.getElementById('taskForm');
             const deleteBtn = document.getElementById('deleteTaskBtn');
+            const createTaskBtn = document.getElementById('createTaskBtn');
+            const modalTitle = document.getElementById('modalTitle');
+            const submitTaskBtn = document.getElementById('submitTaskBtn');
+            const statusGroup = document.getElementById('statusGroup');
             let draggedItem = null;
             let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
             let currentTaskId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) : 0;
@@ -382,18 +384,30 @@
             initializeBoard();
             updateStats();
 
-            form.addEventListener('submit', function (e) {
+            createTaskBtn.addEventListener('click', function () {
+                openCreateTaskModal();
+            });
+
+            taskForm.addEventListener('submit', function (e) {
                 e.preventDefault();
+                const taskId = document.getElementById('taskId').value;
                 const taskName = document.getElementById('taskName').value;
                 const taskDescription = document.getElementById('taskDescription').value;
                 const estimatedTime = document.getElementById('estimatedTime').value;
                 const priority = document.getElementById('priority').value;
+                const status = document.getElementById('status').value || 'todo';
 
-                const newTask = createTask(taskName, taskDescription, estimatedTime, priority, 'todo');
-                addTaskToBoard(newTask);
+                if (taskId) {
+                    updateTask(parseInt(taskId), taskName, taskDescription, estimatedTime, priority, status);
+                } else {
+                    const newTask = createTask(taskName, taskDescription, estimatedTime, priority, status);
+                    addTaskToBoard(newTask);
+                }
+
                 saveTasks();
                 updateStats();
-                form.reset();
+                modal.style.display = 'none';
+                taskForm.reset();
             });
 
             function createTask(name, description, estimatedTime, priority, status) {
@@ -431,6 +445,126 @@
                 addDragListeners(card);
                 addCardClickListeners(card);
                 return card;
+            }
+
+            function addCardClickListeners(card) {
+                const editBtn = card.querySelector('.edit-icon');
+                const deleteBtn = card.querySelector('.delete-icon');
+
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditModal(card);
+                });
+
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteTask(card.dataset.taskId);
+                });
+            }
+
+            function openCreateTaskModal() {
+                modalTitle.textContent = 'Create New Task';
+                submitTaskBtn.textContent = 'Add Task';
+                deleteBtn.style.display = 'none';
+                statusGroup.style.display = 'none';
+                taskForm.reset();
+                document.getElementById('taskId').value = '';
+                modal.style.display = 'block';
+            }
+
+            function openEditModal(card) {
+                const taskId = card.dataset.taskId;
+                const task = tasks.find(t => t.id === parseInt(taskId));
+
+                modalTitle.textContent = 'Edit Task';
+                submitTaskBtn.textContent = 'Update Task';
+                deleteBtn.style.display = 'inline-block';
+                statusGroup.style.display = 'block';
+
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('taskName').value = task.name;
+                document.getElementById('taskDescription').value = task.description;
+                document.getElementById('estimatedTime').value = task.estimatedTime;
+                document.getElementById('priority').value = task.priority;
+                document.getElementById('status').value = task.status;
+
+                modal.style.display = 'block';
+            }
+
+            closeBtn.onclick = function () {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            function updateTask(id, name, description, estimatedTime, priority, status) {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.name = name;
+                    task.description = description;
+                    task.estimatedTime = estimatedTime;
+                    task.priority = priority;
+                    task.status = status;
+
+                    const card = document.querySelector(`[data-task-id="${id}"]`);
+                    if (card) {
+                        card.remove();
+                    }
+
+                    const newCard = createTaskCard(task);
+                    document.getElementById(status).appendChild(newCard);
+                }
+            }
+
+            function updateTaskStatus(taskId, newStatus) {
+                const task = tasks.find(t => t.id === parseInt(taskId));
+                if (task) {
+                    task.status = newStatus;
+                }
+            }
+
+            function deleteTask(taskId) {
+                tasks = tasks.filter(t => t.id !== parseInt(taskId));
+                const card = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (card) {
+                    card.remove();
+                }
+                saveTasks();
+                updateStats();
+            }
+
+            deleteBtn.addEventListener('click', function () {
+                const taskId = document.getElementById('taskId').value;
+                deleteTask(taskId);
+                modal.style.display = 'none';
+            });
+
+            function saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+
+            function initializeBoard() {
+                columns.forEach(column => {
+                    column.innerHTML = `<h3 class="column-header">${column.id === 'todo' ? 'To Do' : column.id === 'in-progress' ? 'In Progress' : 'Done'}</h3>`;
+                });
+                tasks.forEach(task => {
+                    const card = createTaskCard(task);
+                    document.getElementById(task.status).appendChild(card);
+                });
+            }
+
+            function updateStats() {
+                const totalTasks = tasks.length;
+                const completedTasks = tasks.filter(t => t.status === 'done').length;
+                const totalHours = tasks.reduce((sum, task) => sum + parseFloat(task.estimatedTime), 0);
+
+                document.getElementById('totalTasks').textContent = totalTasks;
+                document.getElementById('completedTasks').textContent = completedTasks;
+                document.getElementById('totalHours').textContent = totalHours.toFixed(1);
             }
 
             function addDragListeners(element) {
@@ -474,126 +608,6 @@
                 updateTaskStatus(draggedItem.dataset.taskId, this.id);
                 saveTasks();
                 updateStats();
-            }
-
-            function addCardClickListeners(card) {
-                const editBtn = card.querySelector('.edit-icon');
-                const deleteBtn = card.querySelector('.delete-icon');
-
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditModal(card);
-                });
-
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteTask(card.dataset.taskId);
-                });
-
-                card.addEventListener('click', () => openEditModal(card));
-            }
-
-            function openEditModal(card) {
-                const taskId = card.dataset.taskId;
-                const task = tasks.find(t => t.id === parseInt(taskId));
-
-                document.getElementById('editTaskId').value = task.id;
-                document.getElementById('editTaskName').value = task.name;
-                document.getElementById('editTaskDescription').value = task.description;
-                document.getElementById('editEstimatedTime').value = task.estimatedTime;
-                document.getElementById('editPriority').value = task.priority;
-                document.getElementById('editStatus').value = task.status;
-
-                modal.style.display = 'block';
-            }
-
-            closeBtn.onclick = function () {
-                modal.style.display = 'none';
-            }
-
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            }
-
-            editForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                const taskId = parseInt(document.getElementById('editTaskId').value);
-                const taskName = document.getElementById('editTaskName').value;
-                const taskDescription = document.getElementById('editTaskDescription').value;
-                const estimatedTime = document.getElementById('editEstimatedTime').value;
-                const priority = document.getElementById('editPriority').value;
-                const status = document.getElementById('editStatus').value;
-
-                updateTask(taskId, taskName, taskDescription, estimatedTime, priority, status);
-                modal.style.display = 'none';
-                updateStats();
-            });
-
-            deleteBtn.addEventListener('click', function () {
-                const taskId = parseInt(document.getElementById('editTaskId').value);
-                deleteTask(taskId);
-                modal.style.display = 'none';
-                updateStats();
-            });
-
-            function updateTask(id, name, description, estimatedTime, priority, status) {
-                const task = tasks.find(t => t.id === id);
-                if (task) {
-                    task.name = name;
-                    task.description = description;
-                    task.estimatedTime = estimatedTime;
-                    task.priority = priority;
-                    task.status = status;
-
-                    const card = document.querySelector(`[data-task-id="${id}"]`);
-                    if (card) {
-                        card.remove();
-                    }
-
-                    const newCard = createTaskCard(task);
-                    document.getElementById(status).appendChild(newCard);
-
-                    saveTasks();
-                }
-            }
-
-            function updateTaskStatus(taskId, newStatus) {
-                const task = tasks.find(t => t.id === parseInt(taskId));
-                if (task) {
-                    task.status = newStatus;
-                }
-            }
-
-            function deleteTask(taskId) {
-                tasks = tasks.filter(t => t.id !== parseInt(taskId));
-                const card = document.querySelector(`[data-task-id="${taskId}"]`);
-                if (card) {
-                    card.remove();
-                }
-                saveTasks();
-            }
-
-            function saveTasks() {
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-
-            function initializeBoard() {
-                tasks.forEach(task => {
-                    const card = createTaskCard(task);
-                    document.getElementById(task.status).appendChild(card);
-                });
-            }
-
-            function updateStats() {
-                const totalTasks = tasks.length;
-                const completedTasks = tasks.filter(t => t.status === 'done').length;
-                const totalHours = tasks.reduce((sum, task) => sum + parseFloat(task.estimatedTime), 0);
-
-                document.getElementById('totalTasks').textContent = totalTasks;
-                document.getElementById('completedTasks').textContent = completedTasks;
-                document.getElementById('totalHours').textContent = totalHours.toFixed(1);
             }
         });
     </script>
