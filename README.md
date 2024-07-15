@@ -33,11 +33,11 @@ DevTaskMaster Pro is a web-based application. To install and run it locally:
 
 1.  Clone the repository:
     
-        git clone https://github.com/yourusername/devtaskmaster-pro.git
+        git clone https://github.com/FrontEndProfile/dev-to-do.git
     
 2.  Navigate to the project directory:
     
-        cd devtaskmaster-pro
+        cd dev-to-do
     
 3.  Open the `index.html` file in your web browser.
 
