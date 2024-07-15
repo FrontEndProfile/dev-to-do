@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>Advanced Task Management for Developers</title>
     <style>
@@ -190,6 +191,7 @@
             justify-content: space-between;
             font-size: 0.8em;
             color: #95a5a6;
+            margin-bottom: 6px;
         }
 
         .modal {
@@ -275,7 +277,7 @@
 
 <body>
     <header>
-        <h2>Today Task</h2>
+        <h2>Today Task Management</h2>
     </header>
 
     <div class="container">
@@ -356,9 +358,8 @@
                     </select>
                 </div>
                 <div class="btn-container">
+                    <button type="button" class="delete-button" id="deleteTaskBtn" style="display:none;">Delete Task</button>
                     <button type="submit" class="submit-button" id="submitTaskBtn">Add Task</button>
-                    <button type="button" class="delete-button" id="deleteTaskBtn" style="display:none;">Delete
-                        Task</button>
                 </div>
             </form>
         </div>
@@ -392,7 +393,7 @@
                 e.preventDefault();
                 const taskId = document.getElementById('taskId').value;
                 const taskName = document.getElementById('taskName').value;
-                const taskDescription = document.getElementById('taskDescription').value;
+                const taskDescription = formatDescription(document.getElementById('taskDescription').value);
                 const estimatedTime = document.getElementById('estimatedTime').value;
                 const priority = document.getElementById('priority').value;
                 const status = document.getElementById('status').value || 'todo';
@@ -409,6 +410,11 @@
                 modal.style.display = 'none';
                 taskForm.reset();
             });
+
+            function formatDescription(description) {
+                // Only convert line breaks to <br> tags
+                return description.replace(/\n/g, '<br>');
+            }
 
             function createTask(name, description, estimatedTime, priority, status) {
                 return {
@@ -434,7 +440,7 @@
                 card.dataset.taskId = task.id;
                 card.innerHTML = `
               <h4 class="task-title">${task.name}</h4>
-              <p class="task-description">${task.description}</p>
+              <div class="task-description">${task.description}</div>
               <div class="task-meta">
                 <span>Estimated: ${task.estimatedTime} hours</span>
                 <span>Priority: ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
@@ -483,12 +489,17 @@
 
                 document.getElementById('taskId').value = task.id;
                 document.getElementById('taskName').value = task.name;
-                document.getElementById('taskDescription').value = task.description;
+                document.getElementById('taskDescription').value = unformatDescription(task.description);
                 document.getElementById('estimatedTime').value = task.estimatedTime;
                 document.getElementById('priority').value = task.priority;
                 document.getElementById('status').value = task.status;
 
                 modal.style.display = 'block';
+            }
+
+            function unformatDescription(description) {
+                // Convert <br> tags back to newlines
+                return description.replace(/<br\s*\/?>/g, '\n');
             }
 
             closeBtn.onclick = function () {
