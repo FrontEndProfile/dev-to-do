@@ -1,0 +1,602 @@
+<html>
+
+<head>
+    <title>DevTaskMaster Pro - Advanced Task Management for Developers</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fc;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        .task-form,
+        .task-popup {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .task-board {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .task-column {
+            flex: 1;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 300px;
+            min-height: 400px;
+        }
+
+        .task-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .priority-high {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .priority-normal {
+            border-left: 5px solid #f39c12;
+        }
+
+        .priority-low {
+            border-left: 5px solid #2ecc71;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .submit-button,
+        .update-button,
+        .delete-button {
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-button,
+        .update-button {
+            background-color: #2ecc71;
+        }
+
+        .submit-button:hover,
+        .update-button:hover {
+            background-color: #27ae60;
+        }
+
+        .delete-button {
+            background-color: #e74c3c;
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+
+        .column-header {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #34495e;
+            font-weight: bold;
+        }
+
+        .task-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .task-description {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #95a5a6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: #3498db;
+            transition: color 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            color: #2980b9;
+        }
+
+        .delete-icon {
+            color: #e74c3c;
+        }
+
+        .delete-icon:hover {
+            color: #c0392b;
+        }
+
+        .task-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.5em;
+            color: #3498db;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h2>Today Task</h2>
+    </header>
+
+    <div class="container">
+        <div class="task-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalTasks">1</div>
+                <div>Total Tasks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="completedTasks">0</div>
+                <div>Completed Tasks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalHours">2</div>
+                <div>Total Hours</div>
+            </div>
+        </div>
+
+        <div class="task-form">
+            <h2>Create New Task</h2>
+            <form id="newTaskForm">
+                <div class="form-group">
+                    <label for="taskName">Task Name:</label>
+                    <input type="text" id="taskName" name="taskName" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Description:</label>
+                    <textarea id="taskDescription" name="taskDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="estimatedTime">Estimated Time (hours):</label>
+                    <input type="number" id="estimatedTime" name="estimatedTime" min="0" step="0.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority:</label>
+                    <select id="priority" name="priority">
+                        <option value="low">Low</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-button">Add Task</button>
+            </form>
+        </div>
+
+        <div class="task-board">
+            <div class="task-column" id="todo">
+                <h3 class="column-header">To Do</h3>
+                <!-- <div class="task-card priority-normal" draggable="true" data-task-id="1">
+                    <h4 class="task-title">Naomi Berry</h4>
+                    <p class="task-description">wqwqw</p>
+                    <div class="task-meta">
+                        <span>Estimated: 2 hours</span>
+                        <span>Priority: Normal</span>
+                    </div>
+                    <button class="icon-btn edit-icon" title="Edit">✏️</button>
+                    <button class="icon-btn delete-icon" title="Delete">🗑️</button>
+                </div> -->
+            </div>
+
+            <div class="task-column" id="in-progress">
+                <h3 class="column-header">In Progress</h3>
+            </div>
+
+            <div class="task-column" id="done">
+                <h3 class="column-header">Done</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Task</h2>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId">
+                <div class="form-group">
+                    <label for="editTaskName">Task Name:</label>
+                    <input type="text" id="editTaskName" name="editTaskName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">Description:</label>
+                    <textarea id="editTaskDescription" name="editTaskDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editEstimatedTime">Estimated Time (hours):</label>
+                    <input type="number" id="editEstimatedTime" name="editEstimatedTime" min="0" step="0.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPriority">Priority:</label>
+                    <select id="editPriority" name="editPriority">
+                        <option value="low">Low</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editStatus">Status:</label>
+                    <select id="editStatus" name="editStatus">
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                <div class="btn-container">
+                    <button type="button" class="delete-button" id="deleteTaskBtn">Delete Task</button>
+                    <button type="submit" class="update-button">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('newTaskForm');
+            const taskBoard = document.querySelector('.task-board');
+            const columns = document.querySelectorAll('.task-column');
+            const modal = document.getElementById('taskModal');
+            const closeBtn = modal.querySelector('.close');
+            const editForm = document.getElementById('editTaskForm');
+            const deleteBtn = document.getElementById('deleteTaskBtn');
+            let draggedItem = null;
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            let currentTaskId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) : 0;
+
+            // Initialize the board with tasks from localStorage
+            initializeBoard();
+            updateStats();
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const taskName = document.getElementById('taskName').value;
+                const taskDescription = document.getElementById('taskDescription').value;
+                const estimatedTime = document.getElementById('estimatedTime').value;
+                const priority = document.getElementById('priority').value;
+
+                const newTask = createTask(taskName, taskDescription, estimatedTime, priority, 'todo');
+                addTaskToBoard(newTask);
+                saveTasks();
+                updateStats();
+                form.reset();
+            });
+
+            function createTask(name, description, estimatedTime, priority, status) {
+                return {
+                    id: ++currentTaskId,
+                    name,
+                    description,
+                    estimatedTime,
+                    priority,
+                    status
+                };
+            }
+
+            function addTaskToBoard(task) {
+                const card = createTaskCard(task);
+                document.getElementById(task.status).appendChild(card);
+                tasks.push(task);
+            }
+
+            function createTaskCard(task) {
+                const card = document.createElement('div');
+                card.className = `task-card priority-${task.priority}`;
+                card.draggable = true;
+                card.dataset.taskId = task.id;
+                card.innerHTML = `
+              <h4 class="task-title">${task.name}</h4>
+              <p class="task-description">${task.description}</p>
+              <div class="task-meta">
+                <span>Estimated: ${task.estimatedTime} hours</span>
+                <span>Priority: ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+              </div>
+              <button class="icon-btn edit-icon" title="Edit">✏️</button>
+              <button class="icon-btn delete-icon" title="Delete">🗑️</button>
+            `;
+                addDragListeners(card);
+                addCardClickListeners(card);
+                return card;
+            }
+
+            function addDragListeners(element) {
+                element.addEventListener('dragstart', dragStart);
+                element.addEventListener('dragend', dragEnd);
+            }
+
+            function dragStart() {
+                draggedItem = this;
+                setTimeout(() => this.classList.add('dragging'), 0);
+            }
+
+            function dragEnd() {
+                this.classList.remove('dragging');
+                draggedItem = null;
+            }
+
+            columns.forEach(column => {
+                column.addEventListener('dragover', dragOver);
+                column.addEventListener('dragenter', dragEnter);
+                column.addEventListener('dragleave', dragLeave);
+                column.addEventListener('drop', drop);
+            });
+
+            function dragOver(e) {
+                e.preventDefault();
+            }
+
+            function dragEnter(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#e0e0e0';
+            }
+
+            function dragLeave() {
+                this.style.backgroundColor = '#ecf0f1';
+            }
+
+            function drop() {
+                this.style.backgroundColor = '#ecf0f1';
+                this.appendChild(draggedItem);
+                updateTaskStatus(draggedItem.dataset.taskId, this.id);
+                saveTasks();
+                updateStats();
+            }
+
+            function addCardClickListeners(card) {
+                const editBtn = card.querySelector('.edit-icon');
+                const deleteBtn = card.querySelector('.delete-icon');
+
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditModal(card);
+                });
+
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteTask(card.dataset.taskId);
+                });
+
+                card.addEventListener('click', () => openEditModal(card));
+            }
+
+            function openEditModal(card) {
+                const taskId = card.dataset.taskId;
+                const task = tasks.find(t => t.id === parseInt(taskId));
+
+                document.getElementById('editTaskId').value = task.id;
+                document.getElementById('editTaskName').value = task.name;
+                document.getElementById('editTaskDescription').value = task.description;
+                document.getElementById('editEstimatedTime').value = task.estimatedTime;
+                document.getElementById('editPriority').value = task.priority;
+                document.getElementById('editStatus').value = task.status;
+
+                modal.style.display = 'block';
+            }
+
+            closeBtn.onclick = function () {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            editForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const taskId = parseInt(document.getElementById('editTaskId').value);
+                const taskName = document.getElementById('editTaskName').value;
+                const taskDescription = document.getElementById('editTaskDescription').value;
+                const estimatedTime = document.getElementById('editEstimatedTime').value;
+                const priority = document.getElementById('editPriority').value;
+                const status = document.getElementById('editStatus').value;
+
+                updateTask(taskId, taskName, taskDescription, estimatedTime, priority, status);
+                modal.style.display = 'none';
+                updateStats();
+            });
+
+            deleteBtn.addEventListener('click', function () {
+                const taskId = parseInt(document.getElementById('editTaskId').value);
+                deleteTask(taskId);
+                modal.style.display = 'none';
+                updateStats();
+            });
+
+            function updateTask(id, name, description, estimatedTime, priority, status) {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.name = name;
+                    task.description = description;
+                    task.estimatedTime = estimatedTime;
+                    task.priority = priority;
+                    task.status = status;
+
+                    const card = document.querySelector(`[data-task-id="${id}"]`);
+                    if (card) {
+                        card.remove();
+                    }
+
+                    const newCard = createTaskCard(task);
+                    document.getElementById(status).appendChild(newCard);
+
+                    saveTasks();
+                }
+            }
+
+            function updateTaskStatus(taskId, newStatus) {
+                const task = tasks.find(t => t.id === parseInt(taskId));
+                if (task) {
+                    task.status = newStatus;
+                }
+            }
+
+            function deleteTask(taskId) {
+                tasks = tasks.filter(t => t.id !== parseInt(taskId));
+                const card = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (card) {
+                    card.remove();
+                }
+                saveTasks();
+            }
+
+            function saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+
+            function initializeBoard() {
+                tasks.forEach(task => {
+                    const card = createTaskCard(task);
+                    document.getElementById(task.status).appendChild(card);
+                });
+            }
+
+            function updateStats() {
+                const totalTasks = tasks.length;
+                const completedTasks = tasks.filter(t => t.status === 'done').length;
+                const totalHours = tasks.reduce((sum, task) => sum + parseFloat(task.estimatedTime), 0);
+
+                document.getElementById('totalTasks').textContent = totalTasks;
+                document.getElementById('completedTasks').textContent = completedTasks;
+                document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+            }
+        });
+    </script>
+</body>
+
+</html>
