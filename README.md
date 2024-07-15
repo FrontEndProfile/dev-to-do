@@ -29,7 +29,7 @@ Features
 Installation
 ------------
 
-DevTaskMaster Pro is a web-based application. To install and run it locally:
+Task Manager Pro is a web-based application. To install and run it locally:
 
 1.  Clone the repository:
     
@@ -80,12 +80,12 @@ Use the priority colors to quickly identify the importance of tasks:
 Configuration
 -------------
 
-DevTaskMaster Pro uses local storage to save tasks. No additional configuration is required. However, you can customize the appearance by modifying the CSS in the `style` tag of the HTML file.
+Task Manager uses local storage to save tasks. No additional configuration is required. However, you can customize the appearance by modifying the CSS in the `style` tag of the HTML file.
 
 Contributing
 ------------
 
-Contributions to DevTaskMaster Pro are welcome! Please follow these steps to contribute:
+Contributions to Task Manager Pro are welcome! Please follow these steps to contribute:
 
 1.  Fork the repository
 2.  Create a new branch (`git checkout -b feature/AmazingFeature`)
@@ -98,10 +98,10 @@ License
 
 Distributed under the MIT License. See `LICENSE` file for more information.
 
-Why DevTaskMaster Pro is Worth Your Time
+Why Task Manager is Worth Your Time
 ----------------------------------------
 
-DevTaskMaster Pro stands out as a valuable tool for developers for several reasons:
+Task Manager stands out as a valuable tool for developers for several reasons:
 
 1.  **Streamlined Workflow:** The Kanban-style board helps visualize your workflow, making it easy to manage tasks and track progress at a glance.
 2.  **Time Management:** With built-in time tracking and estimation features, you can better manage your time and improve productivity. The automatic alerts help you stay on track with your estimates.
@@ -111,4 +111,4 @@ DevTaskMaster Pro stands out as a valuable tool for developers for several reaso
 6.  **No Setup Required:** Being a web-based application, there's no need for complex setup or installation. Just open and start using.
 7.  **Open Source:** The open-source nature means you can customize it to your needs and contribute to its improvement.
 
-By using DevTaskMaster Pro, you're not just organizing tasks – you're optimizing your development process, improving time management, and ultimately boosting your productivity as a developer.
+By using Task Manager, you're not just organizing tasks – you're optimizing your development process, improving time management, and ultimately boosting your productivity as a developer.
